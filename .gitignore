@@ -1,3 +1,11 @@
+# ignore specific files
+em22xx_modbus_energy_2mariaDB_SP.py
+em22xx_modbus_energy_2mariaDB.py
+em22xx_modbus_power_2mariaDB_SP.py
+em22xx_modbus_power_2mariaDB.py
+# ignore log files
+*log.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
