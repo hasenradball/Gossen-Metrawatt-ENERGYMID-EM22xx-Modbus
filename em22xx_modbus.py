@@ -8,6 +8,8 @@ from cEnergyMID_EM22xx import EnergyMID_EM22xx
 if __name__ == "__main__":
     start = time.perf_counter()
     em2289_obj = EnergyMID_EM22xx("192.168.178.253")
+    # just for testing
+    #em2289_obj.set_enable_webserver()
     print(f'Webserver status: {em2289_obj.read_webserver_status()}')
     print('\n')
     print(f'Voltages Primary: {em2289_obj.get_voltages_primary()} V')

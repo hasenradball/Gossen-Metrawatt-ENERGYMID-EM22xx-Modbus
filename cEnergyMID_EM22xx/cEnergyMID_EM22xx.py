@@ -392,19 +392,33 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
     def set_disable_webserver(self):
         """Disable the webserver
         -----
-        Register address: 11000;
-        Function code: 0x16; mask_write_register
+        write 0 to disable
+        
+        -----
+        Register address: 11000; U16
+        Function code: 0x10; write_registers
         """
-        #result = self._client.write_register(11000, 0, slave=self._device_unit_id)
-        #print("response:\t", result)
-        return None
+        response = self._client.write_registers(11000, 0, slave=self._device_unit_id)
+        if response.isError():
+            print("Error during disabling webserver!")
+            return False
+        else:
+            print("Successfully disabled webserver!")
+            return True
 
     def set_enable_webserver(self):
         """Enable the Webserver
         -----
-        Register address: 11000;
-        Function code: 0x16; mask_write_register
+        write 1 to enable
+        
+        -----
+        Register address: 11000; U16
+        Function code: 0x10; write_registers
         """
-        #ressult = self._client.write_register(11000, 1, slave=self._device_unit_id)
-        #print("response:\t", result)
-        return None
+        response = self._client.write_registers(11000, 1, slave=self._device_unit_id)
+        if response.isError():
+            print("Error during enabling webserver!")
+            return False
+        else:
+            print("Successfully enalbed webserver!")
+            return True
