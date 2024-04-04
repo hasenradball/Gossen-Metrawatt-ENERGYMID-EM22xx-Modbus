@@ -3,6 +3,7 @@ em22xx_modbus_energy_2mariaDB_SP.py
 em22xx_modbus_energy_2mariaDB.py
 em22xx_modbus_power_2mariaDB_SP.py
 em22xx_modbus_power_2mariaDB.py
+mariadb_config.py
 # ignore log files
 *log.txt
 

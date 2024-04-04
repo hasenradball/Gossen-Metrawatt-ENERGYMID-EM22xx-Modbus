@@ -257,7 +257,7 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
         #print(f"P tot:\t{p[3]} W")
         return p
 
-    def get_energy_import_total(self) -> int:
+    def get_energy_import_total(self) -> float:
         """Get energy import
         
         Read the primary energy import total (all tarifs)
@@ -283,7 +283,7 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
         #print("Energy import:\t", energy_import)
         return energy_import
 
-    def get_energy_export_total(self):
+    def get_energy_export_total(self) -> float:
         """Get energy export
 
         Read the energy export total (all tarifs)
@@ -304,7 +304,7 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
         energy_factor_primary = self.read_input_register(408, 'U32')[0]
         #print("Energie Faktor Primär: ", energy_factor_primary
         # read the mantissa of export total
-        mantissa_export_total = self.read_input_register(302, 'U32', 2)[0]
+        mantissa_export_total = self.read_input_register(302, 'U32')[0]
         energy_export = mantissa_export_total * energy_factor_primary / 1000
         #print("Energy export:\t", energy_export)
         return energy_export
@@ -389,7 +389,7 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
             print(">>> Webserver is disabled!")
         return status
 
-    def set_disable_webserver(self):
+    def set_disable_webserver(self) -> bool:
         """Disable the webserver
         -----
         write 0 to disable
@@ -406,7 +406,7 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
             print("Successfully disabled webserver!")
             return True
 
-    def set_enable_webserver(self):
+    def set_enable_webserver(self) -> bool:
         """Enable the Webserver
         -----
         write 1 to enable
