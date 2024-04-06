@@ -2,22 +2,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import time
-from cEnergyMID_EM2289 import EnergyMID_EM2289
+from cEnergyMID_EM22xx import EnergyMID_EM22xx
 
 # Main
 if __name__ == "__main__":
     start = time.perf_counter()
-    em2289_obj = EnergyMID_EM2289("192.168.178.253")
+    em2289_obj = EnergyMID_EM22xx("192.168.178.253")
+    # just for testing
+    #em2289_obj.set_enable_webserver()
     print(f'Webserver status: {em2289_obj.read_webserver_status()}')
     print('\n')
     print(f'Voltages Primary: {em2289_obj.get_voltages_primary()} V')
     print(f'Currents Primary: {em2289_obj.get_currents_primary()} A')
-    print(f'Power Primary   : {em2289_obj.get_power_primary()} kW')
+    print(f'Power Primary   : {em2289_obj.get_power_primary()} W')
     print('\n')
-    print(f'Energy import total : {em2289_obj.get_energy_import_total()} Wh')
-    print(f'Energy export total : {em2289_obj.get_energy_export_total()} Wh')
+    print(f'Energy import total : {em2289_obj.get_energy_import_total()} kWh')
+    print(f'Energy export total : {em2289_obj.get_energy_export_total()} kWh')
     em2289_obj.read_device_features()
     em2289_obj.read_firmware_version()
     stop = time.perf_counter()
 
-    print(f'INFO: test finished in {stop-start:.3f} s')
+    print(f'\nINFO: test finished in {stop-start:.3f} s')

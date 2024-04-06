@@ -5,13 +5,20 @@
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client import ModbusTcpClient as ModBusClient
-from .Modbus_Constants import Modbus_Constants as CONSTS
-from .Modbus_Constants import EM22xx_Features as FEATURE
+from .Constants import ModbusConstants as CONSTS
+from .Constants import EM22xx_Features as FEATURE
 
 class EM22xx_Modbus:
-    '''Base class for the EM2289 energy meter
-    '''
-    def __init__(self, ip, port=502, device_unit_id=0):
+    """Base class for the EM2289 energy meter
+    """
+    def __init__(self, ip, port = 502, device_unit_id = 0):
+        """Constructor of EM22xx_Modbus object
+        -----
+         Args:
+            ip: ip address of device
+            port: port which is used (default 502)
+            device_unit_id: UnitID (default 0) 
+        """
         self._client = ModBusClient(ip, port)
         self._device_unit_id = device_unit_id
         #print("Device Unit: ", self._device_unit_id)
@@ -24,8 +31,9 @@ class EM22xx_Modbus:
 
 
     def connect(self):
-        '''Establish conncetion of client
-        '''
+        """Establish conncetion of client
+        -----
+        """
         try:
             if not self._client.connect():
                 print("ERROR: client cannot connect to ModBus-Server!")
@@ -39,17 +47,27 @@ class EM22xx_Modbus:
             pass
 
     def close(self):
-        '''Close connection of client
-        '''
+        """Close connection of client
+        -----
+        """
         if self._client.is_socket_open():
             self._client.close()
             #print("INFO: Connection closed!")
         return None
 
-    def read_input_register(self, register_address, datatype, count = 1):
-        '''Read the inoput register from EM2289 device
-           Function code: 0x04
-        '''
+    def read_input_register(self, register_address, datatype, count = 1) -> list:
+        """Read the input register from EM2289 device
+        
+        Read register with function code 0x04
+        -----
+        Args:
+            register_address:
+            datatype: U16, U32 , etc...
+            count: number of datatypes to be converted
+        
+        Returns:
+            data: list of decoded values
+        """
         length = CONSTS.TYPE_TO_LENGTH[datatype] * count
         #print(f'length : {length}')
         result = self._client.read_input_registers(register_address, length, \
@@ -58,10 +76,19 @@ class EM22xx_Modbus:
         data = self.decode_register_readings(result, datatype, count)
         return data
 
-    def read_holding_register(self, register_address, datatype, count = 1):
-        '''Read the inoput register from EM2289 device
-           Function code: 0x03
-        '''
+    def read_holding_register(self, register_address, datatype, count = 1) -> list:
+        """Read the inoput register from EM2289 device
+        
+        Read register with function code 0x03
+        -----
+        Args:
+            register_address:
+            datatype: U16, U32 , etc...
+            count: number of datatypes to be converted
+        
+        Returns:
+            data: list of decoded values
+        """
         length = CONSTS.TYPE_TO_LENGTH[datatype] * count
         #print(f'length : {length}')
         result = self._client.read_holding_registers(register_address, \
@@ -70,9 +97,19 @@ class EM22xx_Modbus:
         data = self.decode_register_readings(result, datatype, count)
         return data
 
-    def decode_register_readings(self, readings, datatype, count):
-        '''Decode the register readings dependend on datatype
-        '''
+    def decode_register_readings(self, readings, datatype, count) -> list:
+        """Decode the register readings 
+        
+        Decode readings depending on datatype given
+        -----
+        Args:
+            readings: dats read from register
+            datatype: U16, U32 , etc...
+            count: number of datatypes to be converted
+        
+        Returns:
+            data: list of decoded values
+        """
         decoder = BinaryPayloadDecoder.fromRegisters(readings.registers, \
             byteorder=Endian.BIG, wordorder=Endian.BIG)
         #print(f'decoder : {decoder}')
@@ -96,31 +133,40 @@ class EM22xx_Modbus:
 
 
 class EnergyMID_EM22xx(EM22xx_Modbus):
-    '''Class for communicating with the EM2289 energy meter
+    """Class for communicating with the EM2289 energy meter
+    -----
+
+    Remarks:
        1.) make sure the python lib 'pymodbus' is installed
+
        2.) Please check if the TCP port in the sma device is activated!
+
        3.) check Register description --> see specific documentation of manufacturer
-       e.g.: https://www.gmc-instruments.de/produkte/industrielle-messtechnik/energiemanagement/energiezaehler/mid-zertifizierte-energiezaehler/em2281em2389/em2289-mid-kwh-4-l-5-80-a-tcp/
-    '''
 
+       site: https://www.gossenmetrawatt.de/produkte/messen-steuern-regeln/energiemanagement/mid-zertifizierte-energiezaehler/energymid-em2281em2389
+    """
 
-    def get_voltages_primary(self):
-        '''Read the voltages
-           Function code: 0x04; read input registers
-           The voltages has the format:
-           mantissa * 10 ^ exponent
+    def get_voltages_primary(self) -> tuple:
+        """Get voltages
 
-           Read the Dreieck voltages as described
-            U12
-            U23
-            U31
-            mean U(L12, L23, L31)
-            U1N
-            U2N
-            U3N
-            mean U(L1, L2, L3)
-           Unit: V
-        '''
+        Read the primary voltages
+        -----
+           
+        The voltages has the format:
+            mantissa * 10 ^ exponent
+
+        Read the Dreieck voltages as described:
+            U12, U23, U31, mean U(L12, L23, L31)
+
+            U1N, U2N, U3N, mean U(L1, L2, L3)
+
+        Returns:
+            (u_12, u_23, u_31, u_mean_12_23_31, u_1n, u_2n, u_3n, u_mean_123)
+        -----
+        Register address: 12, 0-7; S16
+        Function code: 0x04; read input registers
+        Unit: V
+        """
         # first query the exponent
         exponent = self.read_input_register(12, 'S16')[0]
         factor = 10**exponent
@@ -128,39 +174,39 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
 
         # read the voltages (mantissa)
         voltages = self.read_input_register(0, 'S16', 8)
-        u_12 = round(voltages[0] * factor, 1)
-        #print("U12:\t", U_12)
-        u_23 = round(voltages[1] * factor, 1)
-        #print("U23:\t", U_23)
-        u_31 = round(voltages[2] * factor, 1)
-        #print("U31:\t", U_31)
-        u_mean_12_23_31 = round(voltages[3] * factor, 1)
-        #print("U mean Dreieck:\t", U_mean_12_23_31, end="\n\n")
+        # tuple has format: (u_12, u_23, u_31, u_mean_12_23_31, u_1n, u_2n, u_3n, u_mean_123)
+        u = tuple(round(i*factor, 1) for i in voltages)
+        #print(f"tuple of u: {u} V")
+        #print(f"U12:\t{u[0]} V")
+        #print(f"U23:\t{u[1]} V")
+        #print(f"U31:\t{u[2]} V")
+        #print(f"U mean Dreieck:\t{u[3]} V", end="\n\n")
 
-        u_1n = round(voltages[4] * factor, 1)
-        #print("U1N:\t", U_1N)
-        u_2n = round(voltages[5] * factor, 1)
-        #print("U2N: \t", U_2N)
-        u_3n = round(voltages[6] * factor, 1)
-        #print("U3N:\t", U_3N)
-        u_mean_123 = round(voltages[7] * factor, 1)
-        #print("U mean Stern:\t%5.1f" %U_mean_123)
-        return (u_12, u_23, u_31, u_mean_12_23_31, u_1n, u_2n, u_3n, u_mean_123)
+        #print(f"U1N:\t{u[4]} V")
+        #print(f"U2N: \t{u[5]} V")
+        #print(f"U3N:\t{u[6]} V")
+        #print(f"U mean Stern:\t{u[7]:5.1f}")
+        return u
 
-    def get_currents_primary(self):
-        '''Read the currents
-           Function code: 0x04; read input registers
-           The currents has the format:
-           mantissa * 10 ^ exponent
+    def get_currents_primary(self) -> tuple:
+        """Get currents
 
-           Read the currents in L1, L2, L3, N path
-            i1
-            i2
-            i3
-            i mean123
-            i_n
-           Unit: A
-        '''
+        Read the primary currents
+        -----
+
+        The currents has the format:
+        mantissa * 10 ^ exponent
+
+        Read the currents in L1, L2, L3, N path:
+            i1, i2, i3, i mean123, i_n
+        
+        Returns:
+            (i_1, i_2, i_3, i_mean_123, i_n)
+        -----
+        Register address: 108, 100-104; S16
+        Function code: 0x04; read input registers
+        Unit: A
+        """
         # first query the exponent
         exponent = self.read_input_register(108, 'S16')[0]
         factor = 10**exponent
@@ -168,31 +214,33 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
 
         # read the currents (mantissa)
         currents = self.read_input_register(100, 'S16', 5)
-        i_1 = round(currents[0] * factor, 2)
-        #print("I 1:\t\t", I_1)
-        i_2 = round(currents[1] * factor, 2)
-        #print("I 2:\t\t", I_2)
-        i_3 = round(currents[2] * factor, 2)
-        #print("I 3:\t\t", I_3)
-        i_mean_123 = round(currents[3] * factor, 2)
-        #print("I mean 123:\t", I_mean_123)
-        i_n = round(currents[4] * factor, 2)
-        #print("I N:\t\t", I_N)
-        return (i_1, i_2, i_3, i_mean_123, i_n)
+        # tuple has format: (i_1, i_2, i_3, i_mean_123, i_n)
+        i = tuple(round(i*factor, 2) for i in currents)
+        #print(f"tuple of i: {i} A")
+        #print(f"I 1:\t\t{i_1} A")
+        #print(f"I 2:\t\t{i_2} A")
+        #print(f"I 3:\t\t{i_3} A")
+        #print(f"I mean 123:\t{i_mean_123} A")
+        #print(f"I N:\t\t{i_n} A")
+        return i
 
-    def get_power_primary(self):
-        '''Read the primary power
-           Function code: 0x04; read input registers
-           The power has the format:
+    def get_power_primary(self) -> tuple:
+        """Get primary power
+        
+        Read the primary power
+        -----
+        The power has the format:
            mantissa * 10 ^ exponent
 
-           Read the primary power 
-            p1
-            p2
-            p3
-            p_tot
-           Unit: kW
-        '''
+        Read the primary power 
+            p1, p2, p3, p_tot
+        Returns:
+            (p_1, p_2, p_3, p_tot)
+        -----
+        Register address: 212, 200-203; S16
+        Function code: 0x04; read input registers
+        Unit: W
+        """
         # first query the exponent
         exponent = self.read_input_register(212, 'S16')[0]
         factor = 10**exponent
@@ -200,27 +248,32 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
 
         # read the power (mantissa)
         powers = self.read_input_register(200, 'S16', 4)
-        p_1 = round(powers[0] * factor, 2)
-        #print("P 1:\t", P_1)
-        p_2 = round(powers[1] * factor, 2)
-        #print("P 2:\t", P_2)
-        p_3 = round(powers[2] * factor, 2)
-        #print("P 3:\t", P_3)
-        p_tot = round(powers[3] * factor, 2)
-        #print("P tot:\t", P_tot)
-        return (p_1, p_2, p_3, p_tot)
+        # tuple has format: (p_1, p_2, p_3, p_tot)
+        p = tuple(round(i*factor, 2) for i in powers)
+        #print(f"tuple of p: {p} W")
+        #print(f"P 1:\t{p[0]} W")
+        #print(f"P 2:\t{p[1]} W")
+        #print(f"P 3:\t{p[2]} W")
+        #print(f"P tot:\t{p[3]} W")
+        return p
 
-    def get_energy_import_total(self):
-        '''Read energy import 
-           Function code: 0x04; read input registers
-           The energy has the format:
+    def get_energy_import_total(self) -> float:
+        """Get energy import
+        
+        Read the primary energy import total (all tarifs)
+        -----
+        The energy has the format:
            mantissa * primary_energy_factor
            or 
            mantissa * 10 ^ exponent
-           -------------------------------------
-           Read the primary energy of all tarifs
-           Unit: kWh
-        '''
+        
+        Returns:
+            energy_import
+        -----
+        Register address: 408, 300; U32
+        Function code: 0x04; read input registers
+        Unit: kWh
+        """
         # first query Primary Energy factor
         energy_factor_primary = self.read_input_register(408, 'U32')[0]
         #print("Energie Faktor Primär: ", energy_factor_primary
@@ -230,29 +283,38 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
         #print("Energy import:\t", energy_import)
         return energy_import
 
-    def get_energy_export_total(self):
-        '''Read energy export
-           Function code: 0x04; read input registers
-           The energy has the format:
+    def get_energy_export_total(self) -> float:
+        """Get energy export
+
+        Read the energy export total (all tarifs)
+        -----
+        The energy has the format:
            mantissa * primary_energy_factor
            or 
            mantissa * 10 ^ exponent
-           -------------------------------------
-           Read the primary energy of all tarifs
-           Unit: kWh
-        '''
+        
+        Returns:
+            energy_export
+        -----
+        Register address: 408, 302; U32
+        Function code: 0x04; read input registers
+        Unit: kWh
+        """
         # first query Primary Energy factor
         energy_factor_primary = self.read_input_register(408, 'U32')[0]
         #print("Energie Faktor Primär: ", energy_factor_primary
         # read the mantissa of export total
-        mantissa_export_total = self.read_input_register(302, 'U32', 2)[0]
+        mantissa_export_total = self.read_input_register(302, 'U32')[0]
         energy_export = mantissa_export_total * energy_factor_primary / 1000
         #print("Energy export:\t", energy_export)
         return energy_export
 
     def read_device_features(self):
-        '''Read the device fetures of the EM22xx device
-        '''
+        """Read the device fetures of the EM22xx device
+        -----
+        Register address: 3000; U8
+        Function code: 0x04; read input registers
+        """
         print("Device Features")
         features = self.read_input_register(3000, 'U8', 11)
         #print(features)
@@ -270,24 +332,27 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
         return None
 
     def read_firmware_version(self):
-        '''Read the firmware version
-        '''
+        """Read the firmware version
+        -----
+        Register address: 3012; U16
+        Function code: 0x04; read input registers
+        """
         print("Firmware Version")
-        #version = self.read_input_register(3012, 'U16')[0]
+        version = self.read_input_register(3012, 'U16')[0]
         #print(version)
-        readings = self._client.read_input_registers(3012, 2, slave=self._device_unit_id)
-        decoder = BinaryPayloadDecoder.fromRegisters(readings.registers, \
-                byteorder=Endian.BIG, wordorder=Endian.BIG)
-        version = [*str(decoder.decode_16bit_uint())]
-        version_str = f'v{version[0]:}.{version[1]:}{version[2]:}'
+        version_arr = [*str(version)]
+        version_str = f'v{version_arr[0]:}.{version_arr[1]:}{version_arr[2]:}'
         print(f'\tversion :{version_str}')
         return None
 
     def read_device_information(self):
-        '''Read Device Information
-           Function code: 0x04; read input registers
-           Read device options and informations
-        '''
+        """Read Device Information
+
+        Read device options and informations
+        -----
+        Register address: 3000;
+        Function code: 0x04; read input registers
+        """
         print("Device Information")
         readings = self._client.read_input_registers(3000, 36, slave=self._device_unit_id)
         #print("readings.registers: ", readings.registers)
@@ -309,11 +374,14 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
         #data = decoder.decode_8bit_uint()
         return None
 
-    def read_webserver_status(self):
-        '''Read the webserver status
-           Function code: 0x03; read holding registers
-           Read if the webserver is enabled or not
-        '''
+    def read_webserver_status(self) -> int:
+        """Read the webserver status
+        
+        Read if the webserver is enabled or not
+        -----
+        Register address: 11000; U16
+        Function code: 0x03; read holding registers
+        """
         status = self.read_holding_register(11000, 'U16')[0]
         if status:
             print(">>> Webserver is enabled!")
@@ -321,20 +389,36 @@ class EnergyMID_EM22xx(EM22xx_Modbus):
             print(">>> Webserver is disabled!")
         return status
 
-    def set_disable_webserver(self):
-        '''Disable the webserver
-           Function code: 0x16; mask_write_register
-           Disable the webserver
-        '''
-        #result = self._client.write_register(11000, 0, slave=self._device_unit_id)
-        #print("response:\t", result)
-        return None
+    def set_disable_webserver(self) -> bool:
+        """Disable the webserver
+        -----
+        write 0 to disable
+        
+        -----
+        Register address: 11000; U16
+        Function code: 0x10; write_registers
+        """
+        response = self._client.write_registers(11000, 0, slave=self._device_unit_id)
+        if response.isError():
+            print("Error during disabling webserver!")
+            return False
+        else:
+            print("Successfully disabled webserver!")
+            return True
 
-    def set_enable_webserver(self):
-        '''Enable the Webserver
-           Function code: 0x16; mask_write_register
-           Enable the webserver
-        '''
-        #ressult = self._client.write_register(11000, 1, slave=self._device_unit_id)
-        #print("response:\t", result)
-        return None
+    def set_enable_webserver(self) -> bool:
+        """Enable the Webserver
+        -----
+        write 1 to enable
+        
+        -----
+        Register address: 11000; U16
+        Function code: 0x10; write_registers
+        """
+        response = self._client.write_registers(11000, 1, slave=self._device_unit_id)
+        if response.isError():
+            print("Error during enabling webserver!")
+            return False
+        else:
+            print("Successfully enalbed webserver!")
+            return True

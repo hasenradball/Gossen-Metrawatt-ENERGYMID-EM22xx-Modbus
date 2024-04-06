@@ -1,13 +1,15 @@
-'''Constants for use with EM22xx Modbus'''
+"""Constants for use with EM22xx Modbus"""
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-class Modbus_Constants:
-    '''Constants for use with pymodbus
-    '''
-    TYPE_TO_LENGTH = {'U8': 1, 'U16': 1, 'U32': 2, 'U64': 4, 'S8': 1, 'S16': 1, 'S32': 2, 'S64': 4}
+class ModbusConstants:
+    """Constants for use with pymodbus
+    """
+    TYPE_TO_LENGTH = {'U8': 1, 'U16': 1, 'U32': 2, 'U64': 4, \
+                      'S8': 1, 'S16': 1, 'S32': 2, 'S64': 4}
 
 class EM22xx_Features:
+    """Class for EM22xx related constants"""
     TYPE = {0: 'U2281', 2: 'U2289', 3: 'U2381', 4: 'U2387', 5: 'U2389'}
     D    = {0: 'Gossen Metrawatt'}
     # Hilfs-Spannung
@@ -18,10 +20,10 @@ class EM22xx_Features:
             3: 'with U, I, P, Q, S, PF, f, THD, In & Blindenergie'}
     #  Calibration
     P    = {0: 'with MID', 9: 'with MID + Eichschein'}
-    '''Übersetzungsverhältnis
+    """Übersetzungsverhältnis
        VT: des Spannungswandlers (Up/Us)
        CT: des Stromwandlers (Ip/Is)
-    '''
+    """
     Q    = {0: '1', 1: 'adustable', 9: 'CT/VT fixed by order'}
     # Betriebsspannung
     U  = {3: '100V / 110 V not in combination with Z2 possible', \
