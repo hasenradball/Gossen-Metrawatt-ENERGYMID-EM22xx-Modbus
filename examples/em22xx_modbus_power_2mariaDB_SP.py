@@ -5,7 +5,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 from cEnergyMID_EM22xx import EnergyMID_EM22xx
-from mariadb_config import CONFIG
+from mariadb_config import MARIA_DB_CONFIG
 from cMariaDB_mysql import cMariaDB_mysql as maria_db
 
 # Main
@@ -18,6 +18,6 @@ if __name__ == "__main__":
     power = em2289_obj.get_power_primary()
     #print(power)
 
-    maria_obj = maria_db(CONFIG)
+    maria_obj = maria_db(MARIA_DB_CONFIG)
     maria_obj.insert_by_stored_procedure("insert_into_leistung", voltages + currents + power)
     #print("INFO: Insert into mariaDB finished!")
