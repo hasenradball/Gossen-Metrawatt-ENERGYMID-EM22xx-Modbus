@@ -20,13 +20,12 @@ if __name__ == "__main__":
     power = em2289_obj.get_power_primary()
     #print(power)
 
-    tablecolumns_U = ("`U12`, `U23`, `U31`, `mean_U12_23_31`, `U1N`, `U2N`, `U3N`, `mean_U123`")
-    tablecolumns_I = ("`I1`, `I2`, `I3`, `IN`")
-    tablecolumns_P = ("`P1`, `P2`, `P3`, `Ptot`")
-    tablecolumns = tablecolumns_U + tablecolumns_I + tablecolumns_P
+    tablecolumns_u = "`U12`, `U23`, `U31`, `mean_U12_23_31`, `U1N`, `U2N`, `U3N`, `mean_U123`"
+    tablecolumns_i = "`I1`, `I2`, `I3`, `IN`"
+    tablecolumns_p = "`P1`, `P2`, `P3`, `Ptot`"
+    tablecolumns = tablecolumns_u + tablecolumns_i + tablecolumns_p
     print(tablecolumns)
-    
+
     maria_obj = maria_db(MARIA_DB_CONFIG)
     maria_obj.insert_by_sql_insert_stmt("leistung", tablecolumns, voltages + currents + power)
     #print("INFO: Insert into mariaDB finished!")
-    
