@@ -3,14 +3,14 @@
 
 import mysql.connector
 from mysql.connector import errorcode
-from cEnergyMID_EM22xx import EnergyMID_EM22xx
+from energymid_em22xx import EnergyMID_EM22xx
 from mariadb_config import MARIA_DB_CONFIG
-from cMariaDB_mysql import cMariaDB_mysql as maria_db
+from maria_db_mysql import cMariaDB_mysql as maria_db
 
 
 # Main
 if __name__ == "__main__":
-    em2289_obj = EnergyMID_EM22xx("192.168.178.253")
+    em2289_obj = EnergyMIDEM22xx("192.168.178.253")
     voltages = em2289_obj.get_voltages_primary()
     #print(voltages)
 

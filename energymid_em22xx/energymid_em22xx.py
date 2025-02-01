@@ -5,10 +5,10 @@
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client import ModbusTcpClient as ModBusClient
-from .Constants import ModbusConstants as CONSTS
-from .Constants import EM22xx_Features as FEATURE
+from .constants import ModbusConstants as CONSTS
+from .constants import EM22xxFeatures as FEATURE
 
-class EM22xx_Modbus:
+class EM22xxModbus:
     """Base class for the EM2289 energy meter
     """
     def __init__(self, ip, port = 502, device_unit_id = 0):
@@ -70,8 +70,18 @@ class EM22xx_Modbus:
         """
         length = CONSTS.TYPE_TO_LENGTH[datatype] * count
         #print(f'length : {length}')
-        result = self._client.read_input_registers(register_address, length, \
-                slave=self._device_unit_id)
+        try:
+            result = self._client.read_input_registers(register_address, length, \
+                                                     slave=self._device_unit_id)
+            #print(result, type(result))
+        except ModbusException as exc:
+            print(f">>> read_input_register: Received ModbusException({exc}) from library")
+        if result.isError():
+            print(f">>> read_input_register: Received Modbus library error({result})")
+        if isinstance(result, ExceptionResponse):
+            print(f">>> read_input_register: Received Modbus library exception ({result})")
+            # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
+            return False
         #print(type(result.registers), ": ", result.registers)
         data = self.decode_register_readings(result, datatype, count)
         return data
@@ -91,8 +101,18 @@ class EM22xx_Modbus:
         """
         length = CONSTS.TYPE_TO_LENGTH[datatype] * count
         #print(f'length : {length}')
-        result = self._client.read_holding_registers(register_address, \
+        try:
+            result = self._client.read_holding_registers(register_address, \
                 length, slave=self._device_unit_id)
+            #print(result, type(result))
+        except ModbusException as exc:
+            print(f">>> read_holding_register: Received ModbusException({exc}) from library")
+        if result.isError():
+            print(f">>> read_holding_register: Received Modbus library error({result})")
+        if isinstance(result, ExceptionResponse):
+            print(f">>> read_holding_register: Received Modbus library exception ({result})")
+            # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
+            return False
         #print(type(result.registers), ": ", result.registers)
         data = self.decode_register_readings(result, datatype, count)
         return data
@@ -113,6 +133,7 @@ class EM22xx_Modbus:
         decoder = BinaryPayloadDecoder.fromRegisters(readings.registers, \
             byteorder=Endian.BIG, wordorder=Endian.BIG)
         #print(f'decoder : {decoder}')
+        data = []
         if datatype == 'U8':
             data = [decoder.decode_8bit_uint() for i in range(count)]
         elif datatype == 'U16':
@@ -132,7 +153,7 @@ class EM22xx_Modbus:
         return data
 
 
-class EnergyMID_EM22xx(EM22xx_Modbus):
+class EnergyMIDEM22xx(EM22xxModbus):
     """Class for communicating with the EM2289 energy meter
     -----
 
