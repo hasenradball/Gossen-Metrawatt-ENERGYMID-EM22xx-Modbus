@@ -2,12 +2,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import time
-from cEnergyMID_EM22xx import EnergyMID_EM22xx
+from energymid_em22xx import EnergyMIDEM22xx
 
 # Main
 if __name__ == "__main__":
     start = time.perf_counter()
-    em2289_obj = EnergyMID_EM22xx("192.168.178.253")
+    em2289_obj = EnergyMIDEM22xx("192.168.178.253")
     # just for testing
     #em2289_obj.set_enable_webserver()
     print(f'Webserver status: {em2289_obj.read_webserver_status()}')

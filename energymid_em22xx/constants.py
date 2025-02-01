@@ -1,4 +1,4 @@
-"""Constants for use with EM22xx Modbus"""
+"""module to provide constants for use with EM22xx Modbus"""
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -8,7 +8,7 @@ class ModbusConstants:
     TYPE_TO_LENGTH = {'U8': 1, 'U16': 1, 'U32': 2, 'U64': 4, \
                       'S8': 1, 'S16': 1, 'S32': 2, 'S64': 4}
 
-class EM22xx_Features:
+class EM22xxFeatures:
     """Class for EM22xx related constants"""
     TYPE = {0: 'U2281', 2: 'U2289', 3: 'U2381', 4: 'U2387', 5: 'U2389'}
     D    = {0: 'Gossen Metrawatt'}
