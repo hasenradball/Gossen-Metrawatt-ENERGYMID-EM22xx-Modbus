@@ -5,6 +5,7 @@
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client import ModbusTcpClient as ModBusClient
+from pymodbus import (ExceptionResponse, ModbusException)
 from .constants import ModbusConstants as CONSTS
 from .constants import EM22xxFeatures as FEATURE
 
