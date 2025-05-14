@@ -16,7 +16,7 @@ python solution for connecting the energy meter EM22xx via Modbus
 python3 -m pip install pymodbus
 python3 -m pip install pyserial
 ```
->Remark: for pymodbus use minimum the version of 3.6.x
+>Remark: for pymodbus use minimum the version of 3.9.2, tested with pymodbus==3.9.2
 
 ## Usage
 Check the python code in the script `em22xx_modbus.py`.<br>

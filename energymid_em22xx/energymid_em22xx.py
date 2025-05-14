@@ -5,7 +5,7 @@
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client import ModbusTcpClient as ModBusClient
-from pymodbus import (ExceptionResponse, ModbusException)
+from pymodbus import (FramerType, ExceptionResponse, ModbusException)
 from .constants import ModbusConstants as CONSTS
 from .constants import EM22xxFeatures as FEATURE
 
@@ -20,7 +20,7 @@ class EM22xxModbus:
             port: port which is used (default 502)
             device_unit_id: UnitID (default 0) 
         """
-        self._client = ModBusClient(ip, port)
+        self._client = ModBusClient(ip, port=port, framer=FramerType.SOCKET)
         self._device_unit_id = device_unit_id
         #print("Device Unit: ", self._device_unit_id)
         self.connect()
@@ -72,7 +72,7 @@ class EM22xxModbus:
         length = CONSTS.TYPE_TO_LENGTH[datatype] * count
         #print(f'length : {length}')
         try:
-            result = self._client.read_input_registers(register_address, length, \
+            result = self._client.read_input_registers(register_address, count=length, \
                                                      slave=self._device_unit_id)
             #print(result, type(result))
         except ModbusException as exc:
@@ -104,7 +104,7 @@ class EM22xxModbus:
         #print(f'length : {length}')
         try:
             result = self._client.read_holding_registers(register_address, \
-                length, slave=self._device_unit_id)
+                count=length, slave=self._device_unit_id)
             #print(result, type(result))
         except ModbusException as exc:
             print(f">>> read_holding_register: Received ModbusException({exc}) from library")
@@ -117,6 +117,14 @@ class EM22xxModbus:
         #print(type(result.registers), ": ", result.registers)
         data = self.decode_register_readings(result, datatype, count)
         return data
+
+    def uint16_array_to_uint8_array(self, uint16_array):
+        uint8_array = []
+        for value in uint16_array:
+            high_byte = (value >> 8) & 0xFF
+            low_byte = value & 0xFF
+        uint8_array.extend([high_byte, low_byte])
+        return uint8_array
 
     def decode_register_readings(self, readings, datatype, count) -> list:
         """Decode the register readings 
@@ -131,26 +139,27 @@ class EM22xxModbus:
         Returns:
             data: list of decoded values
         """
-        decoder = BinaryPayloadDecoder.fromRegisters(readings.registers, \
-            byteorder=Endian.BIG, wordorder=Endian.BIG)
         #print(f'decoder : {decoder}')
         data = []
         if datatype == 'U8':
-            data = [decoder.decode_8bit_uint() for i in range(count)]
+            pass
+            #data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT16)
+            #print(self.uint16_array_to_uint8_array(data))
         elif datatype == 'U16':
-            data = [decoder.decode_16bit_uint() for i in range(count)]
+            data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT16)
         elif datatype == 'U32':
-            data = [decoder.decode_32bit_uint() for i in range(count)]
+            data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT32)
         elif datatype == 'U64':
-            data = [decoder.decode_64bit_uint() for i in range(count)]
+            data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT64)
         elif datatype == 'S8':
-            data = [decoder.decode_8bit_int() for i in range(count)]
+            pass
+            #data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.INT16)
         elif datatype == 'S16':
-            data = [decoder.decode_16bit_int() for i in range(count)]
+            data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.INT16)
         elif datatype == 'S32':
-            data = [decoder.decode_32bit_int() for i in range(count)]
+            data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.INT32)
         elif datatype == 'S64':
-            data = [decoder.decode_64bit_int() for i in range(count)]
+            data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.INT64)
         return data
 
 
@@ -190,7 +199,7 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Unit: V
         """
         # first query the exponent
-        exponent = self.read_input_register(12, 'S16')[0]
+        exponent = self.read_input_register(12, 'S16')
         factor = 10**exponent
         #print("Faktor: ", factor)
 
@@ -230,7 +239,7 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Unit: A
         """
         # first query the exponent
-        exponent = self.read_input_register(108, 'S16')[0]
+        exponent = self.read_input_register(108, 'S16')
         factor = 10**exponent
         #print("Faktor: ", factor)
 
@@ -264,7 +273,7 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Unit: W
         """
         # first query the exponent
-        exponent = self.read_input_register(212, 'S16')[0]
+        exponent = self.read_input_register(212, 'S16')
         factor = 10**exponent
         #print("Faktor: ", factor)
 
@@ -297,10 +306,10 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Unit: kWh
         """
         # first query Primary Energy factor
-        energy_factor_primary = self.read_input_register(408, 'U32')[0]
+        energy_factor_primary = self.read_input_register(408, 'U32')
         #print("Energie Faktor Primär: ", energy_factor_primary
         # read the mantissa of import total
-        mantissa_import_total = self.read_input_register(300, 'U32')[0]
+        mantissa_import_total = self.read_input_register(300, 'U32')
         energy_import = mantissa_import_total * energy_factor_primary / 1000
         #print("Energy import:\t", energy_import)
         return energy_import
@@ -323,10 +332,10 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Unit: kWh
         """
         # first query Primary Energy factor
-        energy_factor_primary = self.read_input_register(408, 'U32')[0]
+        energy_factor_primary = self.read_input_register(408, 'U32')
         #print("Energie Faktor Primär: ", energy_factor_primary
         # read the mantissa of export total
-        mantissa_export_total = self.read_input_register(302, 'U32')[0]
+        mantissa_export_total = self.read_input_register(302, 'U32')
         energy_export = mantissa_export_total * energy_factor_primary / 1000
         #print("Energy export:\t", energy_export)
         return energy_export
@@ -360,7 +369,7 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Function code: 0x04; read input registers
         """
         print("Firmware Version")
-        version = self.read_input_register(3012, 'U16')[0]
+        version = self.read_input_register(3012, 'U16')
         #print(version)
         version_arr = [*str(version)]
         version_str = f'v{version_arr[0]:}.{version_arr[1]:}{version_arr[2]:}'
@@ -404,7 +413,7 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Register address: 11000; U16
         Function code: 0x03; read holding registers
         """
-        status = self.read_holding_register(11000, 'U16')[0]
+        status = self.read_holding_register(11000, 'U16')
         if status:
             print(">>> Webserver is enabled!")
         else:
