@@ -29,6 +29,40 @@ Then you can check the communucation via:
 
 `python3 em22xx_modbus.py`
 
+The result may look like:
+
+```
+>>> Webserver is enabled!
+Webserver status: 1
+
+
+Voltages Primary: (416.2, 417.0, 417.5, 416.9, 240.4, 240.7, 240.9, 240.7) V
+Currents Primary: (0.0, 0.0, 0.0, 0.0, 0.0) A
+Power Primary   : (0, 0, 0, 0) W
+
+
+Energy import total : 11600.56 kWh
+Energy export total : 1.01 kWh
+Device Features
+[2, 0, 0, 1, 0, 0, 6, 0, 4, 0, 0]
+        Type: U2289
+        D   : Gossen Metrawatt
+        H   : not available
+        M   : with U, I, P, Q, S, PF, f, THD, In
+        P   : with MID
+        Q   : 1
+        U   : 400 V
+        V   : no impulse output
+        W   : TCP/IP
+        Z   : without Zählerstandsgang
+        S   : 0
+
+Firmware Version
+        version :v1.21
+
+INFO: test finished in 0.026 s
+```
+
 # License
 This library is licensed under MIT Licence.
 
