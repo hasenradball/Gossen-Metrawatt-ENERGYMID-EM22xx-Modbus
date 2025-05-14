@@ -2,8 +2,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client import ModbusTcpClient as ModBusClient
 from pymodbus import (FramerType, ExceptionResponse, ModbusException)
 from .constants import ModbusConstants as CONSTS
@@ -118,13 +116,17 @@ class EM22xxModbus:
         data = self.decode_register_readings(result, datatype, count)
         return data
 
-    def uint16_array_to_uint8_array(self, uint16_array):
+    def convert_uint16_to_uint8_array(self, uint16_array, count):
+        """
+        Convert an 16-bit array into an 8-bit array,
+        and return only specific number of elements by count
+        """
         uint8_array = []
-        for value in uint16_array:
+        for value in (uint16_array):
             high_byte = (value >> 8) & 0xFF
             low_byte = value & 0xFF
-        uint8_array.extend([high_byte, low_byte])
-        return uint8_array
+            uint8_array.extend([high_byte, low_byte])
+        return uint8_array[0:count]
 
     def decode_register_readings(self, readings, datatype, count) -> list:
         """Decode the register readings 
@@ -142,18 +144,14 @@ class EM22xxModbus:
         #print(f'decoder : {decoder}')
         data = []
         if datatype == 'U8':
-            pass
-            #data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT16)
-            #print(self.uint16_array_to_uint8_array(data))
+            data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT16)
+            data = self.convert_uint16_to_uint8_array(data, count)
         elif datatype == 'U16':
             data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT16)
         elif datatype == 'U32':
             data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT32)
         elif datatype == 'U64':
             data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.UINT64)
-        elif datatype == 'S8':
-            pass
-            #data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.INT16)
         elif datatype == 'S16':
             data = self._client.convert_from_registers(readings.registers, data_type=self._client.DATATYPE.INT16)
         elif datatype == 'S32':
@@ -385,29 +383,23 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Function code: 0x04; read input registers
         """
         print("Device Information")
-        readings = self._client.read_input_registers(3000, 36, slave=self._device_unit_id)
-        #print("readings.registers: ", readings.registers)
-        #decoder = BinaryPayloadDecoder.fromRegisters(readings.registers, \
-        #        byteorder=Endian.BIG, wordorder=Endian.BIG)
-        features = self.decode_register_readings(readings, 'U8', 11)
+        readings = self.read_input_register(3000, 'U8', 23)
+        print(readings)
+        features = readings[0:11]
         print(features)
-        serial_number = self.decode_register_readings(readings, 'U8', 8)
+        serial_number = readings[11:19]
         print(serial_number)
-        calibration_day = self.decode_register_readings(readings, 'U8', 1)
+        calibration_day = readings[19]
         print(calibration_day)
-        calibration_month = self.decode_register_readings(readings, 'U8', 1)
+        calibration_month = readings[20]
         print(calibration_month)
-        calibration_year = self.decode_register_readings(readings, 'U16', 1)
+        calibration_year = (readings[22] << 8) | readings[21]
         print(calibration_year)
-        #data = decoder.decode_8bit_uint()
-        #int_to_type = {0: 'U2281', 2: 'U2289', 3: 'U2381', 4: 'U2387', 5: 'U2389'}
-        #print(f'Type: {int_to_type[data]}')
-        #data = decoder.decode_8bit_uint()
         return None
 
     def read_webserver_status(self) -> int:
         """Read the webserver status
-        
+
         Read if the webserver is enabled or not
         -----
         Register address: 11000; U16
@@ -429,7 +421,8 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Register address: 11000; U16
         Function code: 0x10; write_registers
         """
-        response = self._client.write_registers(11000, 0, slave=self._device_unit_id)
+        register_value = self._client.convert_to_registers(0, data_type=self._client.DATATYPE.UINT16)
+        response = self._client.write_registers(11000, values=register_value, slave=self._device_unit_id)
         if response.isError():
             print("Error during disabling webserver!")
             return False
@@ -446,7 +439,8 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Register address: 11000; U16
         Function code: 0x10; write_registers
         """
-        response = self._client.write_registers(11000, 1, slave=self._device_unit_id)
+        register_value = self._client.convert_to_registers(1, data_type=self._client.DATATYPE.UINT16)
+        response = self._client.write_registers(11000, values=register_value, slave=self._device_unit_id)
         if response.isError():
             print("Error during enabling webserver!")
             return False
