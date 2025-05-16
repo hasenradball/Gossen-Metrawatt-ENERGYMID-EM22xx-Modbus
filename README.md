@@ -1,4 +1,6 @@
 # Gossen-Metrawatt-ENERGYMID-EM22xx-Modbus
+[![Spell Check](https://github.com/hasenradball/Gossen-Metrawatt-ENERGYMID-EM22xx-Modbus/actions/workflows/spell_checker.yml/badge.svg)](https://github.com/hasenradball/Gossen-Metrawatt-ENERGYMID-EM22xx-Modbus/actions/workflows/spell_checker.yml)
+
 python solution for connecting the energy meter EM22xx via Modbus
 
 ![EM2289](./docs/EM2289.jpg)
