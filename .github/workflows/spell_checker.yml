@@ -23,4 +23,4 @@ jobs:
       - name: Spell check
         uses: codespell-project/actions-codespell@master
         with:
-          skip: ./.git
+          skip: ./.git, DBL_GMC_zaehler-grundlagen_DEUTSCH.PDF, energymid-em228x-em238x-ba_d.pdf
