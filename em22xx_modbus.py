@@ -18,7 +18,7 @@ if __name__ == "__main__":
     print('\n')
     print(f'Energy import total : {em2289_obj.get_energy_import_total()} kWh')
     print(f'Energy export total : {em2289_obj.get_energy_export_total()} kWh')
-    em2289_obj.read_device_features()
+    #em2289_obj.read_device_features()
     em2289_obj.read_firmware_version()
     stop = time.perf_counter()
 

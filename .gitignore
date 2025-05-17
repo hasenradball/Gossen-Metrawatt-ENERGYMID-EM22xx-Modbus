@@ -1,5 +1,6 @@
 # ignore specific files
 mariadb_config.py
+
 # ignore log files
 *log.txt
 
