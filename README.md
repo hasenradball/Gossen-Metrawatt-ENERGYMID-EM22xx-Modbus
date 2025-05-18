@@ -22,7 +22,7 @@ python solution for connecting the energy meter EM22xx via Modbus
 
 ## Installation steps
 ### Make python ready to use
-1) Create a python3 virtual environment in your home folder, see:<br>
+1. Create a python3 virtual environment in your home folder, see:<br>
 [https://docs.python.org/3/library/venv.html](https://docs.python.org/3/library/venv.html)
 
 ```
