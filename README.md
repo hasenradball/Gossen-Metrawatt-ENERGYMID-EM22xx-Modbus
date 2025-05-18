@@ -43,12 +43,6 @@ You can check the state by:
 ~/my_python_venvs/bin/python -m pip list
 ```
 
-
-
- ### Make your SMA Inverter ready to use
-1. make sure that your SMA device supports the modbus protocol
-2. make sure that the SMA device has started/enabled the TCP Server to communicate via modbus
-
 ## Library Installation
 Install the library from github.<br>
 Lets assume you want to install it in the following path: `~/git_repos`
