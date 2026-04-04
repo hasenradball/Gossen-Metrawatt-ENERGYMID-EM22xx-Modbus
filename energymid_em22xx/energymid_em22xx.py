@@ -71,7 +71,7 @@ class EM22xxModbus:
         #print(f'length : {length}')
         try:
             result = self._client.read_input_registers(register_address, count=length, \
-                                                     slave=self._device_unit_id)
+                                                     device_id=self._device_unit_id)
             #print(result, type(result))
         except ModbusException as exc:
             print(f">>> read_input_register: Received ModbusException({exc}) from library")
@@ -102,7 +102,7 @@ class EM22xxModbus:
         #print(f'length : {length}')
         try:
             result = self._client.read_holding_registers(register_address, \
-                count=length, slave=self._device_unit_id)
+                count=length, device_id=self._device_unit_id)
             #print(result, type(result))
         except ModbusException as exc:
             print(f">>> read_holding_register: Received ModbusException({exc}) from library")
@@ -422,7 +422,7 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Function code: 0x10; write_registers
         """
         register_value = self._client.convert_to_registers(0, data_type=self._client.DATATYPE.UINT16)
-        response = self._client.write_registers(11000, values=register_value, slave=self._device_unit_id)
+        response = self._client.write_registers(11000, values=register_value, device_id=self._device_unit_id)
         if response.isError():
             print("Error during disabling webserver!")
             return False
@@ -440,7 +440,7 @@ class EnergyMIDEM22xx(EM22xxModbus):
         Function code: 0x10; write_registers
         """
         register_value = self._client.convert_to_registers(1, data_type=self._client.DATATYPE.UINT16)
-        response = self._client.write_registers(11000, values=register_value, slave=self._device_unit_id)
+        response = self._client.write_registers(11000, values=register_value, device_id=self._device_unit_id)
         if response.isError():
             print("Error during enabling webserver!")
             return False
