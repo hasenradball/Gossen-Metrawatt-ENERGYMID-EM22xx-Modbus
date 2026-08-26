@@ -73,14 +73,16 @@ class EM22xxModbus:
             result = self._client.read_input_registers(register_address, count=length, \
                                                      device_id=self._device_unit_id)
             #print(result, type(result))
+            if isinstance(result, ExceptionResponse):
+                print(f">>> read_input_register: Received Modbus library exception ({result})")
+                # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
+                return False
+            if result.isError():
+                print(f">>> read_input_register: Received Modbus library error({result})")
+                return False
         except ModbusException as exc:
             print(f">>> read_input_register: Received ModbusException({exc}) from library")
-        if result.isError():
-            print(f">>> read_input_register: Received Modbus library error({result})")
-        if isinstance(result, ExceptionResponse):
-            print(f">>> read_input_register: Received Modbus library exception ({result})")
-            # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
-            return False
+            raise
         #print(type(result.registers), ": ", result.registers)
         data = self.decode_register_readings(result, datatype, count)
         return data
@@ -104,14 +106,16 @@ class EM22xxModbus:
             result = self._client.read_holding_registers(register_address, \
                 count=length, device_id=self._device_unit_id)
             #print(result, type(result))
+            if isinstance(result, ExceptionResponse):
+                print(f">>> read_holding_register: Received Modbus library exception ({result})")
+                # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
+                return False
+            if result.isError():
+                print(f">>> read_holding_register: Received Modbus library error({result})")
+                return False
         except ModbusException as exc:
             print(f">>> read_holding_register: Received ModbusException({exc}) from library")
-        if result.isError():
-            print(f">>> read_holding_register: Received Modbus library error({result})")
-        if isinstance(result, ExceptionResponse):
-            print(f">>> read_holding_register: Received Modbus library exception ({result})")
-            # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
-            return False
+            raise
         #print(type(result.registers), ": ", result.registers)
         data = self.decode_register_readings(result, datatype, count)
         return data
